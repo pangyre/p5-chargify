@@ -51,13 +51,12 @@ has "agent" =>
             ->new( agent => join("/", __PACKAGE__, $VERSION),
                    protocols_allowed => [ "https" ],
                    timeout => 15,
-                   onerror => undef,
+                   # onerror => undef, # sub? logger?
                    stack_depth => 3,
                    headers => {
                        "Accept-Charset" => "utf-8",
                        "Accept" => "application/json",
-                       "Authorization" => join(" ",
-                                               "Basic",
+                       "Authorization" => join(" ", "Basic",
                                                encode_base64( join(":", $self->api_key, $self->password ))),
 
                    },
@@ -91,8 +90,11 @@ Chargify::API - ...
 
 =head1 Synopsis
 
- # Use your own API.
+ # Use your own API key.
  my $capi = Chargify::API->new("0Ha1der2ChargifyApi-");
+
+ my $capi = Chargify::API->new(api_key => "0Ha1der2ChargifyApi-",
+                               subdomain => "mysite");
 
 =head1 Description
 
@@ -144,25 +146,3 @@ such damages.
 =cut
 
 https://<subdomain>.chargify.com/<resource URI>
-
-my %coders = (
-              "application/json" => {
-                                     serialize => \&JSON::XS::encode_json,
-                                     marshal => \&JSON::XS::decode_json,
-                                    },
-             );
-
-
-$req->authorization_basic($key,"x");
-
-
-Authorization => encode("MIME-Header", join(" ", "Basic", encode( USER . ':' . PASS )
-    );
-
-
-        # $agent->add_header(...);
-
-        die 'Basic ' . encode_base64( $self->api_key . ':' . "x" );
-
-#                       die encode("MIME-Header", join(":", $self->api_key, $self->password));
-

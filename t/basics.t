@@ -27,6 +27,18 @@ BEGIN { use_ok("Chargify::API") }
       );
 }
 
+# Some security vetting...
+{
+    ok( my $capi = Chargify::API->new(api_key => "0Ha1der2ChargifyApi-",
+                                      subdomain => "mysite"),
+        "New with api_key and subdomain" );
+
+    isnt( exception { $capi->agent->get("http://example.org") },
+          undef,
+          "Request with http protocal is fatal",
+        );
+}
+
 done_testing();
 
 __DATA__
