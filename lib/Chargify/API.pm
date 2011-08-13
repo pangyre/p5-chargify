@@ -5,7 +5,7 @@ our $VERSION = "0.01-DEV";
 use Mouse;
 use Mouse::Util::TypeConstraints "duck_type";
 use Encode;
-use JSON::XS;
+use JSON;
 use MIME::Base64;
 
 around BUILDARGS => sub {
