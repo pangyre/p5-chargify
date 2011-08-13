@@ -1,0 +1,19 @@
+=head1 Name
+
+Chargify Perl API
+
+=head1 API Links
+
+=over 4
+
+=item * L<http://chargify.com>
+
+=item * L<http://docs.chargify.com/api-integration>
+
+=item * L<http://chargify.com/blog/>
+
+=item * L<http://chargify.com/blog/category/list/api/>
+
+=back
+
+=cut
