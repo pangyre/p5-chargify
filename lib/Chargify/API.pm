@@ -4,6 +4,9 @@ our $AUTHORITY = 'cpan:ASHLEY';
 our $VERSION = "0.01-DEV";
 use Mouse;
 use Mouse::Util::TypeConstraints "duck_type";
+use Encode;
+use JSON::XS;
+use MIME::Base64;
 
 around BUILDARGS => sub {
     my $orig  = shift;
@@ -11,6 +14,14 @@ around BUILDARGS => sub {
     return $class->$orig(@_) unless @_ == 1;
     $class->$orig( api_key => $_[0] );
 };
+
+has "subdomain" =>
+    is => "ro",
+    isa => "Str",
+    required => 1,
+    lazy => 1,
+    default => sub { "you-forgot-the-subdomain" },
+    ;
 
 has "api_key" =>
     is => "ro",
@@ -29,11 +40,12 @@ has "password" =>
 
 has "agent" =>
     is => "rw",
-    isa => duck_type(qw/ get post put delete /),
-    handles => [qw/ get post put delete /],
+    isa => duck_type(qw/ get post put /), # delete...is needed
+    handles => [qw/ get post put /],
     lazy => 1,
     required => 1,
     default => sub {
+        my $self = shift;
         require WWW::Mechanize;
         WWW::Mechanize
             ->new( agent => join("/", __PACKAGE__, $VERSION),
@@ -43,12 +55,29 @@ has "agent" =>
                    stack_depth => 3,
                    headers => {
                        "Accept-Charset" => "utf-8",
-                       "Accept" => "application/json"
+                       "Accept" => "application/json",
+                       "Authorization" => join(" ",
+                                               "Basic",
+                                               encode_base64( join(":", $self->api_key, $self->password ))),
+
                    },
                  );
-        # $agent->add_header(...);
     },
     ;
+
+
+sub subscriptions {
+    my $self = shift;
+    my $uri = shift || confess "Need a URI";
+    my $res = $self->get( $uri ); # <URI>/subscriptions );
+    warn $self->agent->uri, $/;
+    $res->code =~ /\A2\d\d\z/ or die $res->as_string;
+    my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
+    my $content = decode( $charset, $res->content, Encode::FB_CROAK );
+
+#    Chargify::Subscription->new ... decode_json($content);
+
+}
 
 __PACKAGE__->meta->make_immutable();
 
@@ -123,12 +152,17 @@ my %coders = (
                                     },
              );
 
-request must add accept headers
 
-  'User-Agent' => 'Mozilla/4.76 [en] (Win98; U)',
-  'Accept-Language' => 'en-US',
-  'Accept-Charset' => 'iso-8859-1,*,utf-8',
-  'Accept-Encoding' => 'gzip',
-  'Accept' =>
-   "image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, image/png, */*",
+$req->authorization_basic($key,"x");
+
+
+Authorization => encode("MIME-Header", join(" ", "Basic", encode( USER . ':' . PASS )
+    );
+
+
+        # $agent->add_header(...);
+
+        die 'Basic ' . encode_base64( $self->api_key . ':' . "x" );
+
+#                       die encode("MIME-Header", join(":", $self->api_key, $self->password));
 
