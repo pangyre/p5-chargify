@@ -14,9 +14,8 @@ ok( my $capi = Chargify::API->new( subdomain => $ENV{CHARGIFY_SUBDOMAIN} ),
     "Chargify::API->new with ENV" );
 
 diag( "CHARGIFY_API_KEY " . $capi->api_key );
-my $service = URI->new("https://$ENV{CHARGIFY_SUBDOMAIN}.chargify.com");
-$service->path("subscriptions");
-diag( $capi->subscriptions( $service ) );
+
+diag( $capi->subscriptions );
 
 done_testing();
 

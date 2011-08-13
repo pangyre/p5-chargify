@@ -23,6 +23,20 @@ has "subdomain" =>
     default => sub { "you-forgot-the-subdomain" },
     ;
 
+has "endpoint" =>
+    is => "ro",
+    isa => "URI::https",
+    required => 1,
+    lazy => 1,
+    default => sub {
+        my $self = shift;
+        my $end = URI->new;
+        $end->scheme("https");
+        $end->host( $self->subdomain . ".chargify.com" );
+        $end;
+    },
+    ;
+
 has "api_key" =>
     is => "ro",
     isa => "Str",
@@ -64,11 +78,16 @@ has "agent" =>
     },
     ;
 
+sub uri_for {
+    my $uri = +shift->endpoint->clone;
+    my $path = shift || confess "Path is required in uri_for";
+    $uri->path($path);
+    $uri;
+}
 
 sub subscriptions {
     my $self = shift;
-    my $uri = shift || confess "Need a URI";
-    my $res = $self->get( $uri ); # <URI>/subscriptions );
+    my $res = $self->get( $self->uri_for("subscriptions") );
     warn $self->agent->uri, $/;
     $res->code =~ /\A2\d\d\z/ or die $res->as_string;
     my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
@@ -145,4 +164,4 @@ such damages.
 
 =cut
 
-https://<subdomain>.chargify.com/<resource URI>
+# https://<subdomain>.chargify.com/<resource URI>
