@@ -1,0 +1,60 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+use YAML;
+use URI;
+use URI::QueryParam;
+use LWP::UserAgent;
+use HTTP::Request::Common;
+use HTTP::Response;
+use Encode;
+use JSON::XS;
+
+#my $key = $ENV{CHARGIFY_API_KEY} || die "Set CHARGIFY_API_KEY\n";
+#my $service = URI->new("https://pangyresoft.chargify.com/customers.json");
+#my $req = GET $service;
+#$req->authorization_basic($key,"x");
+#my $ua = LWP::UserAgent->new;
+#my $response = $ua->request($req);
+#print $response->as_string, $/;
+
+my %coders = (
+              "application/json" => {
+                                     serialize => \&JSON::XS::encode_json,
+                                     marshal => \&JSON::XS::decode_json,
+                                    },
+             );
+my $response = HTTP::Response->parse(join"",<DATA>);
+
+print $response->code, $/;
+print $response->header("Content-Type"), $/;
+my ( $content_type, $charset ) = split /;\s*/, $response->header("Content-Type"), 2;
+my $content = decode( $charset, $response->content, Encode::FB_CROAK );
+# print $charset, $/;
+
+print $content, $/;
+my $data = $coders{$content_type}->{marshal}->($content);
+print YAML::Dump($data);
+
+exit 0;
+
+__DATA__
+HTTP/1.1 200 OK
+Cache-Control: private, max-age=0, must-revalidate
+Connection: close
+ETag: "d751713988987e9331980363e24189ce"
+Server: nginx/0.7.66 + Phusion Passenger 2.2.15 (mod_rails/mod_rack)
+Content-Length: 2
+Content-Type: application/json; charset=utf-8
+Client-Date: Sat, 13 Aug 2011 01:00:16 GMT
+Client-Peer: 206.55.122.5:443
+Client-Response-Num: 1
+Client-SSL-Cert-Issuer: /C=GB/ST=Greater Manchester/L=Salford/O=COMODO CA Limited/CN=COMODO High Assurance Secure Server CA
+Client-SSL-Cert-Subject: /C=US/postalCode=02494/ST=MA/L=Needham/street=197 1st Ave/O=Chargify, LLC/OU=Comodo PremiumSSL Wildcard/CN=*.chargify.com
+Client-SSL-Cipher: DHE-RSA-AES256-SHA
+Client-SSL-Warning: Peer certificate not verified
+Status: 200
+X-Powered-By: Phusion Passenger (mod_rails/mod_rack) 2.2.15
+X-Runtime: 48
+
+[]
