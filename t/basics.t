@@ -35,7 +35,7 @@ BEGIN { use_ok("Chargify::API") }
 
     isnt( exception { $capi->agent->get("http://example.org") },
           undef,
-          "Request with http protocal is fatal",
+          "Request with http protocol is fatal",
         );
 }
 
