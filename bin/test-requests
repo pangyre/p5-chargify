@@ -10,13 +10,13 @@ use HTTP::Response;
 use Encode;
 use JSON::XS;
 
-#my $key = $ENV{CHARGIFY_API_KEY} || die "Set CHARGIFY_API_KEY\n";
-#my $service = URI->new("https://pangyresoft.chargify.com/customers.json");
-#my $req = GET $service;
-#$req->authorization_basic($key,"x");
-#my $ua = LWP::UserAgent->new;
-#my $response = $ua->request($req);
-#print $response->as_string, $/;
+my $key = $ENV{CHARGIFY_API_KEY} || die "Set CHARGIFY_API_KEY\n";
+my $service = URI->new("https://pangyresoft.chargify.com/subscriptions.json");
+my $req = GET $service;
+$req->authorization_basic($key,"x");
+my $ua = LWP::UserAgent->new;
+my $response = $ua->request($req);
+print $response->as_string, $/;
 
 my %coders = (
               "application/json" => {
@@ -24,7 +24,8 @@ my %coders = (
                                      marshal => \&JSON::XS::decode_json,
                                     },
              );
-my $response = HTTP::Response->parse(join"",<DATA>);
+
+#my $response = HTTP::Response->parse(join"",<DATA>);
 
 print $response->code, $/;
 print $response->header("Content-Type"), $/;
