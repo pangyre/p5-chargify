@@ -8,6 +8,8 @@ Chargify Perl API
 
 =item * L<http://chargify.com>
 
+=item * L<http://docs.chargify.com/api-resources>
+
 =item * L<http://docs.chargify.com/api-integration>
 
 =item * L<http://chargify.com/blog/>

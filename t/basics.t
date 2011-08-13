@@ -17,6 +17,18 @@ BEGIN { use_ok("Chargify::API") }
         );
 }
 
+{
+    local $ENV{CHARGIFY_API_KEY} = "l1qyIi0oHaIdeRf73n6-";
+    ok( my $capi = Chargify::API->new,
+        "Chargify::API->new with ENV");
+    is( exception { $capi->api_key },
+        undef,
+        "api_key is populated from CHARGIFY_API_KEY",
+      );
+
+
+}
+
 done_testing();
 
 __DATA__
