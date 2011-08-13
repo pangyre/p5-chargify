@@ -33,7 +33,7 @@ BEGIN { use_ok("Chargify::API") }
                                       subdomain => "mysite"),
         "New with api_key and subdomain" );
 
-    isnt( exception { $capi->agent->get("http://example.org") },
+    isnt( exception { $capi->get("http://example.org") },
           undef,
           "Request with http protocol is fatal",
         );
