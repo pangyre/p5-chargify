@@ -8,6 +8,7 @@ use Mouse::Util::TypeConstraints "duck_type";
 use Encode;
 use JSON;
 use MIME::Base64;
+require Chargify::ObjectifiedData;
 
 around BUILDARGS => sub {
     my $orig  = shift;
@@ -88,17 +89,6 @@ sub uri_for {
     $uri;
 }
 
-require Chargify::ObjectifiedData;
-sub subscriptions {
-    my $self = shift;
-    my $res = $self->get( $self->uri_for("subscriptions") );
-    $res->code =~ /\A2\d\d\z/ or die $res->as_string;
-    my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
-    my $content = decode( $charset, $res->content, Encode::FB_CROAK );
-    my $raw_subscriptions = decode_json($content);
-    map { Chargify::ObjectifiedData->objectify_data($_)  } @{ $raw_subscriptions };
-}
-
 sub call {
     my $self = shift;
     my $service = shift || confess "No service given";
@@ -109,15 +99,10 @@ sub call {
     map { Chargify::ObjectifiedData->objectify_data($_) } @{ decode_json($content) };
 }
 
-sub transactions {
-    my $self = shift;
-    my $res = $self->get( $self->uri_for("subscriptions") );
-    $res->code =~ /\A2\d\d\z/ or die $res->as_string;
-    my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
-    my $content = decode( $charset, $res->content, Encode::FB_CROAK );
-    my $raw_subscriptions = decode_json($content);
-    map { Chargify::ObjectifiedData->objectify_data($_)  } @{ $raw_subscriptions };
-}
+sub transactions { +shift->call("transactions", @_) }
+sub subscriptions { +shift->call("subscriptions", @_) }
+sub products { +shift->call("products", @_) }
+sub customers { +shift->call("customers", @_) }
 
 __PACKAGE__->meta->make_immutable();
 
