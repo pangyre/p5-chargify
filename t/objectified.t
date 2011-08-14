@@ -11,11 +11,11 @@ ok( $data->[0]->{subscription}, "Matches expectations" );
 # my @objects;
 for my $thing ( @{$data} )
 {
-    note( $thing );
+    # note( $thing );
     ok( my ( $object ) = Chargify::ObjectifiedData->objectify_data( $thing ),
         "Chargify::ObjectifiedData->objectify_data..." );
     # push @objects, $object;
-   isa_ok( $object, "Chargify::Subscription" );
+    isa_ok( $object, "Chargify::Subscription" );
     isa_ok( $object->customer, "Chargify::Customer" );
     isa_ok( $object->product, "Chargify::Product" );
     isa_ok( $object->product->product_family, "Chargify::ProductFamily" );
@@ -23,10 +23,7 @@ for my $thing ( @{$data} )
     is( $object->customer->first_name, "Spendly",
         '$object->customer->first_name is right' );
     # is( $object->credit_card->masked_card_number, $/;
-
-
 }
-
 
 done_testing();
 

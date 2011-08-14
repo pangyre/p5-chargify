@@ -88,8 +88,28 @@ sub uri_for {
     $uri;
 }
 
-use Chargify::ObjectifiedData;
+require Chargify::ObjectifiedData;
 sub subscriptions {
+    my $self = shift;
+    my $res = $self->get( $self->uri_for("subscriptions") );
+    $res->code =~ /\A2\d\d\z/ or die $res->as_string;
+    my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
+    my $content = decode( $charset, $res->content, Encode::FB_CROAK );
+    my $raw_subscriptions = decode_json($content);
+    map { Chargify::ObjectifiedData->objectify_data($_)  } @{ $raw_subscriptions };
+}
+
+sub call {
+    my $self = shift;
+    my $service = shift || confess "No service given";
+    my $res = $self->get( $self->uri_for($service) );
+    $res->code =~ /\A2\d\d\z/ or die $res->as_string;
+    my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
+    my $content = decode( $charset, $res->content, Encode::FB_CROAK );
+    map { Chargify::ObjectifiedData->objectify_data($_) } @{ decode_json($content) };
+}
+
+sub transactions {
     my $self = shift;
     my $res = $self->get( $self->uri_for("subscriptions") );
     $res->code =~ /\A2\d\d\z/ or die $res->as_string;
