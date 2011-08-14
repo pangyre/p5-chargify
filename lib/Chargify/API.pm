@@ -92,12 +92,11 @@ use Chargify::ObjectifiedData;
 sub subscriptions {
     my $self = shift;
     my $res = $self->get( $self->uri_for("subscriptions") );
-    warn $self->agent->uri, $/;
     $res->code =~ /\A2\d\d\z/ or die $res->as_string;
     my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
     my $content = decode( $charset, $res->content, Encode::FB_CROAK );
     my $raw_subscriptions = decode_json($content);
-    map { Chargify::ObjectifiedData->data_to_objects($_)  } @{ $raw_subscriptions };
+    map { Chargify::ObjectifiedData->objectify_data($_)  } @{ $raw_subscriptions };
 }
 
 __PACKAGE__->meta->make_immutable();

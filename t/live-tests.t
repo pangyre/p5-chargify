@@ -15,9 +15,8 @@ ok( my $capi = Chargify::API->new( subdomain => $ENV{CHARGIFY_SUBDOMAIN} ),
 
 ok( my @subscriptions = $capi->subscriptions );
 
-use YAML;
-diag( YAML::Dump(\@subscriptions) );
-diag( "CC: " . $subscriptions[0]->credit_card );
+# use YAML; note( YAML::Dump(\@subscriptions) );
+# diag( "CC: " . $subscriptions[0]->credit_card );
 
 done_testing();
 
