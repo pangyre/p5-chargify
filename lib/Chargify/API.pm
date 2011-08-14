@@ -99,10 +99,19 @@ sub call {
     my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
     my $content = decode( $charset, $res->content, Encode::FB_CROAK );
     my $data = decode_json($content);
-    my $list = ref($data) eq "ARRAY" ?
-        $data : ref($data) eq "HASH" ?
-        [ $data ] : confess("This should not be possible");
-    map { Chargify::ObjectifiedData->objectify_data($_) } @{$list};
+
+    if ( ref $data eq "ARRAY" )
+    {
+        return map { Chargify::ObjectifiedData->objectify_data($_) } @{$data};
+    }
+    elsif ( ref $data eq "HASH" )
+    {
+        return Chargify::ObjectifiedData->objectify_data($data);
+    }
+    else
+    {
+        confess "call returned unexpected data: ", $data;
+    }
 }
 
 sub transactions { +shift->call("transactions", @_) }
