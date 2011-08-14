@@ -1,7 +1,7 @@
 # ABSTRACT: This is the worst part of Dist::Zilla.
 package Chargify::API;
 our $AUTHORITY = 'cpan:ASHLEY';
-our $VERSION = "0.01-DEV";
+our $VERSION = "0.01-TRIAL";
 use Mouse;
 use namespace::autoclean;
 use Mouse::Util::TypeConstraints "duck_type";
@@ -10,6 +10,11 @@ use JSON;
 use MIME::Base64;
 use Path::Class "file";
 use Chargify::ObjectifiedData;
+
+has "chargify_version" =>
+    is => "ro",
+    init_arg => undef,
+    default => sub { "v1.4.0" };
 
 around BUILDARGS => sub {
     my $orig  = shift;
@@ -33,10 +38,7 @@ has "endpoint" =>
     lazy => 1,
     default => sub {
         my $self = shift;
-        my $end = URI->new;
-        $end->scheme("https");
-        $end->host( $self->subdomain . ".chargify.com" );
-        $end;
+        URI->new("https://" . $self->subdomain . ".chargify.com");
     },
     ;
 
@@ -161,6 +163,24 @@ Plenty, includingE<ndash>
 
 =item * /subscription/<x>/charges
 
+=item * /coupons
+
+=item * /customers
+
+=item * /subscriptions/<id>/add_coupon
+
+=item * /subscriptions/<id>/remove_coupon
+
+=item * /subscriptions/<subscription_id>/migrations
+
+=item * /subscriptions/<subscription_id>/charges
+
+=item * /subscriptions/<subscription_id>/adjustments
+
+=item * /subscriptions/<subscription_id>/components/<component_id>/usages
+
+=item * /subscriptions/<subscription_id>/refunds
+
 =back
 
 =head2 PUTs
@@ -169,17 +189,25 @@ Plenty, includingE<ndash>
 
 =item * /subscriptions/<x>
 
+=item * /coupon/<id>
+
+=item * /customers/<id>
+
 =back
 
 =head2 DELETEs
 
 =over 4
 
+=item * /customers/<id>
+
 =item * /subscriptions/<x>
+
+=item * /coupon/<id>
 
 =back
 
-L<http://docs.chargify.com/api-components>, L<http://docs.chargify.com/api-resources>.
+L<http://docs.chargify.com/api-components>, L<http://docs.chargify.com/api-resources>, L<http://docs.chargify.com/api-customers>, L<http://docs.chargify.com/api-migrations>.
 
 =head1 Code Repository
 
