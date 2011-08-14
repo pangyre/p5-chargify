@@ -9,14 +9,15 @@ sub _load_class_with_attributes {
     $class or confess "No class given";
     my $attr_str = join(" ", @attributes);
     eval <<"PackageInstantiation";
-    package $class {
-        use Mouse;
-        has [qw/ $attr_str /] =>
-              is => "ro",
-              ;
-        sub loaded { 1 }
-        __PACKAGE__->meta->make_immutable();
-    };
+    {
+      package $class;
+      use Mouse;
+          has [qw/ $attr_str /] =>
+                is => "ro",
+                ;
+          sub loaded { 1 }
+          __PACKAGE__->meta->make_immutable();
+    }
 PackageInstantiation
     $@ and confess $@;
 }
