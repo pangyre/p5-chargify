@@ -139,11 +139,47 @@ Chargify::API - ...
 
 =head1 Description
 
+E<hellip>
+
 =over 4
 
 =item *
 
 =back
+
+=head1 To Do
+
+Plenty, includingE<ndash>
+
+=head2 POSTs
+
+=over 4
+
+=item * /subscriptions
+
+=item * /product_families/<x>/[component_type]
+
+=item * /subscription/<x>/charges
+
+=back
+
+=head2 PUTs
+
+=over 4
+
+=item * /subscriptions/<x>
+
+=back
+
+=head2 DELETEs
+
+=over 4
+
+=item * /subscriptions/<x>
+
+=back
+
+L<http://docs.chargify.com/api-components>, L<http://docs.chargify.com/api-resources>.
 
 =head1 Code Repository
 
@@ -155,7 +191,7 @@ E<hellip>
 
 =head1 Author
 
-Ashley Pond V E<middot> ashley.pond.v@gmail.com E<middot> L<http://pangyresoft.com>.
+Ashley Pond V E<middot> ashley@cpan.org E<middot> L<http://pangyresoft.com>.
 
 =head1 License
 
