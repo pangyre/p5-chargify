@@ -3,6 +3,7 @@ package Chargify::API;
 our $AUTHORITY = 'cpan:ASHLEY';
 our $VERSION = "0.01-DEV";
 use Mouse;
+use namespace::autoclean;
 use Mouse::Util::TypeConstraints "duck_type";
 use Encode;
 use JSON;
@@ -20,7 +21,7 @@ has "subdomain" =>
     isa => "Str",
     required => 1,
     lazy => 1,
-    default => sub { "you-forgot-the-subdomain" },
+    default => sub { "YOU-MUST-SET-THE-SUBDOMAIN" },
     ;
 
 has "endpoint" =>
@@ -49,6 +50,8 @@ has "password" =>
     is => "ro",
     init_arg => undef,
     isa => "Str",
+    required => 1,
+    lazy => 1,
     default => sub { "x" },
     ;
 
@@ -85,6 +88,7 @@ sub uri_for {
     $uri;
 }
 
+use Chargify::ObjectifiedData;
 sub subscriptions {
     my $self = shift;
     my $res = $self->get( $self->uri_for("subscriptions") );
@@ -92,9 +96,8 @@ sub subscriptions {
     $res->code =~ /\A2\d\d\z/ or die $res->as_string;
     my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
     my $content = decode( $charset, $res->content, Encode::FB_CROAK );
-
-#    Chargify::Subscription->new ... decode_json($content);
-
+    my $raw_subscriptions = decode_json($content);
+    map { Chargify::ObjectifiedData->data_to_objects($_)  } @{ $raw_subscriptions };
 }
 
 __PACKAGE__->meta->make_immutable();

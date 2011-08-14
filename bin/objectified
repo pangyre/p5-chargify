@@ -1,0 +1,90 @@
+#!/usr/bin/env perl
+use warnings;
+use strict;
+use JSON;
+use YAML "Dump";
+use Carp;
+use Scalar::Util "blessed";
+
+my $data = [ decode_json(<DATA>) ]->[0]->[0]->{subscription};
+# print Dump $data;
+my $subscription = _curry_data_to_object_tree("Chargify::Subscription", $data);
+
+# print YAML::Dump($subscription), $/;
+
+print $subscription->customer->first_name, $/;
+print $subscription->credit_card->masked_card_number, $/;
+
+exit 0;
+
+sub _load_class_with_attributes {
+    my ( $class, @attributes ) = @_;
+    my $attr_str = join(" ", @attributes);
+    eval <<"PackageInstantiation";
+    package $class {
+        use Mouse;
+        has [qw/ $attr_str /] =>
+              is => "ro",
+              ;
+        sub loaded { 1 }
+        __PACKAGE__->meta->make_immutable();
+    };
+PackageInstantiation
+    $@ and confess $@;
+}
+
+sub _curry_data_to_object_tree {
+    my $class = shift;
+    warn $class, $/;
+
+    my $args = shift;
+    my @attributes = keys %{ $args };
+    unless ( eval { $class->loaded } )
+    {
+        _load_class_with_attributes( $class, @attributes );
+    }
+    else
+    {
+        warn "$class is already loaded\n";
+    }
+
+    for my $name ( keys %{$args} )
+    {
+        # print "\t", $name, $/;
+        if ( ref($args->{$name}) eq "HASH" )
+        {
+            my $package = "Chargify::" . _camel_convert($name);
+            # Convert in place to object.
+            $args->{$name} = _curry_data_to_object_tree( $package, $args->{$name} );
+            # print "\t", $args->{$name}, $/;
+        }
+        elsif ( ref( $args->{$name} ) eq "ARRAY" )
+        {
+            die "ARRAY";
+        }
+        elsif ( not ref $args->{$name} )
+        {
+            # warn "not a ref";
+        }
+        elsif ( blessed $args->{$name} )
+        {
+            # warn "Blessed: $args->{$name}";
+            #confess "Wha'ppen?";
+        }
+    }
+    $class->new( $args );
+}
+
+sub _camel_convert {
+    local $_ = shift;
+    s/_([a-z0-9])|\A([a-z])/uc($1||$2)/ge;
+    $_;
+}
+
+exit 0;
+
+#  Subroutines
+#---------------------------------------------------------------------
+
+__DATA__
+[{"subscription":{"signup_revenue":"0.00","credit_card":{"customer_vault_token":null,"vault_token":"1","card_type":"bogus","current_vault":"bogus","expiration_year":2013,"billing_state":"NM","billing_city":"Taos","id":387362,"billing_address_2":"","masked_card_number":"XXXX-XXXX-XXXX-1","last_name":"McThriftson","expiration_month":1,"billing_zip":"87501","billing_country":"US","billing_address":"","customer_id":805540,"first_name":"Spendly"},"expires_at":null,"created_at":"2011-08-12T21:30:52-04:00","cancel_at_end_of_period":false,"activated_at":null,"delayed_cancel_at":null,"cancellation_message":null,"updated_at":"2011-08-12T21:30:52-04:00","trial_ended_at":"2012-08-12T21:30:52-04:00","signup_payment_id":6578760,"previous_state":"trialing","customer":{"reference":"fluffy","city":"","address":"","zip":"","created_at":"2011-08-12T21:27:40-04:00","country":"","updated_at":"2011-08-12T21:27:40-04:00","id":805540,"phone":"","last_name":"McThriftson","address_2":"","organization":"","state":"","first_name":"Spendly","email":"fluffy@sedition.com"},"id":804579,"canceled_at":null,"next_assessment_at":"2012-08-12T21:30:52-04:00","current_period_ends_at":"2012-08-12T21:30:52-04:00","trial_started_at":"2011-08-12T21:30:52-04:00","product":{"product_family":{"name":"Thneed","handle":"thneed","accounting_code":null,"id":12753,"description":"A thing everyone needs"},"name":"Ongoing Needling","return_params":"","handle":"thneedle","created_at":"2011-08-12T21:29:23-04:00","update_return_url":"","return_url":"","price_in_cents":100,"updated_at":"2011-08-12T21:29:23-04:00","trial_interval":12,"expiration_interval_unit":"never","expiration_interval":null,"accounting_code":"000001","initial_charge_in_cents":null,"id":48054,"require_credit_card":false,"trial_price_in_cents":0,"interval":1,"request_credit_card":false,"description":"You know, for kids.","archived_at":null,"trial_interval_unit":"month","interval_unit":"day"},"current_period_started_at":"2011-08-12T21:30:52-04:00","balance_in_cents":0,"state":"trialing"}}]

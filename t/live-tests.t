@@ -13,9 +13,11 @@ plan skip_all => "Set CHARGIFY_API_KEY, CHARGIFY_SUBDOMAIN, *and* I_UNDERSTAND_T
 ok( my $capi = Chargify::API->new( subdomain => $ENV{CHARGIFY_SUBDOMAIN} ),
     "Chargify::API->new with ENV" );
 
-diag( "CHARGIFY_API_KEY " . $capi->api_key );
+ok( my @subscriptions = $capi->subscriptions );
 
-diag( $capi->subscriptions );
+use YAML;
+diag( YAML::Dump(\@subscriptions) );
+diag( "CC: " . $subscriptions[0]->credit_card );
 
 done_testing();
 
