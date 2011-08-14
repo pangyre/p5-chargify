@@ -30,17 +30,28 @@ for my $service (qw/ products subscriptions transactions customers /)
 
 for my $product ( @{ $objects{products} } )
 {
-    ok( my ( $product ) = $capi->call("products", $product->id),
-        "Call product/" . $product->id );
+    ok( my ( $product ) = $capi->get("products", $product->id),
+        "Get " . $capi->uri_for("product", $product->id ) );
     ok( $product->description,
         "Description: " . $product->description );
+    ok( $product->handle,
+        "Handle: " . $product->handle );
+    ok( ( $product ) = $capi->get("products/handle", $product->handle),
+        "Get " . $capi->uri_for("product/handle", $product->handle) );
 }
+
+for my $subscription ( @{ $objects{subscriptions} } )
+{
+    # my @components = $subscription->
+}
+
+# URL: https://<subdomain>.chargify.com/subscriptions/<subscription_id>/components.<format>
 
 done_testing();
 
 __DATA__
 
-ok( my @transactions = $capi->call("transactions") );
+ok( my @transactions = $capi->get("transactions") );
 note( YAML::Dump(\@transactions) );
 
 ok( my @subscriptions = $capi->subscriptions );

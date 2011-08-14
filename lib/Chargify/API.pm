@@ -60,7 +60,7 @@ has "password" =>
 has "agent" =>
     is => "rw",
     isa => duck_type(qw/ get post put /), # delete...is needed
-    handles => [qw/ get post put /],
+    handles => [qw/ post put /],
     lazy => 1,
     required => 1,
     default => sub {
@@ -91,10 +91,10 @@ sub uri_for {
     $uri;
 }
 
-sub call {
+sub get {
     my $self = shift;
     my $path = $self->uri_for(@_) || confess "No service arguments given";
-    my $res = $self->get($path);
+    my $res = $self->agent->get($path);
     $res->code =~ /\A2\d\d\z/ or die $res->as_string;
     my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
     my $content = decode( $charset, $res->content, Encode::FB_CROAK );
@@ -110,14 +110,14 @@ sub call {
     }
     else
     {
-        confess "call returned unexpected data: ", $data;
+        confess "get() returned unexpected data: ", $data;
     }
 }
 
-sub transactions { +shift->call("transactions", @_) }
-sub subscriptions { +shift->call("subscriptions", @_) }
-sub products { +shift->call("products", @_) }
-sub customers { +shift->call("customers", @_) }
+sub transactions { +shift->get("transactions", @_) }
+sub subscriptions { +shift->get("subscriptions", @_) }
+sub products { +shift->get("products", @_) }
+sub customers { +shift->get("customers", @_) }
 
 __PACKAGE__->meta->make_immutable();
 
