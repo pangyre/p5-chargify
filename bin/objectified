@@ -6,19 +6,22 @@ use YAML "Dump";
 use Carp;
 use Scalar::Util "blessed";
 
-my $data = [ decode_json(<DATA>) ]->[0]->[0]->{subscription};
+my $data = decode_json(<DATA>);
 # print Dump $data;
-my $subscription = _curry_data_to_object_tree("Chargify::Subscription", $data);
+my @subscriptions = map { objectify_data($_) } @{$data};
 
-# print YAML::Dump($subscription), $/;
+print YAML::Dump(@subscriptions), $/;
 
-print $subscription->customer->first_name, $/;
-print $subscription->credit_card->masked_card_number, $/;
+print join $/, @subscriptions, $/;
+
+#print $subscription->customer->first_name, $/;
+#print $subscription->credit_card->masked_card_number, $/;
 
 exit 0;
 
 sub _load_class_with_attributes {
     my ( $class, @attributes ) = @_;
+    $class or confess "No class given";
     my $attr_str = join(" ", @attributes);
     eval <<"PackageInstantiation";
     package $class {
@@ -33,19 +36,25 @@ PackageInstantiation
     $@ and confess $@;
 }
 
-sub _curry_data_to_object_tree {
-    my $class = shift;
-    warn $class, $/;
-
-    my $args = shift;
-    my @attributes = keys %{ $args };
-    unless ( eval { $class->loaded } )
+sub objectify_data {
+    my $args = shift || die "No args";
+    my @objects;
+    for my $name ( keys %{ $args } )
     {
-        _load_class_with_attributes( $class, @attributes );
+        my $package = "Chargify::" . _camel_convert($name);
+        push @objects, _curry_data_to_object_tree($package, $args->{$name});
     }
-    else
+    @objects;
+}
+
+sub _curry_data_to_object_tree {
+    my ( $class, $args ) = @_;
+
+    my @attributes = keys %{ $args };
+    if ( $class and not eval { $class->loaded } )
     {
-        warn "$class is already loaded\n";
+        print "Loading $class\n";
+        _load_class_with_attributes( $class, @attributes );
     }
 
     for my $name ( keys %{$args} )
