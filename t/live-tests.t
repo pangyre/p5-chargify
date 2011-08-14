@@ -15,14 +15,25 @@ plan skip_all => "Set CHARGIFY_API_KEY, CHARGIFY_SUBDOMAIN, *and* I_UNDERSTAND_T
 ok( my $capi = Chargify::API->new( subdomain => $ENV{CHARGIFY_SUBDOMAIN} ),
     "Chargify::API->new with ENV" );
 
+my %objects;
 for my $service (qw/ products subscriptions transactions customers /)
 {
-    ok( my @obj = $capi->$service,
-        blessed($capi) . "->$service" );
+    ok( my @obj = $capi->$service, blessed($capi) . "->$service" );
+    $objects{$service} = \@obj;
     for my $obj ( @obj )
     {
-        ok(blessed($obj), "$obj is an object");
+        ok(blessed($obj), blessed($obj) . " is an object");
     }
+}
+
+# URL: https://<subdomain>.chargify.com/products/<id>.<format> 
+
+for my $product ( @{ $objects{products} } )
+{
+    ok( my ( $product ) = $capi->call("products", $product->id),
+        "Call product/" . $product->id );
+    ok( $product->description,
+        "Description: " . $product->description );
 }
 
 done_testing();

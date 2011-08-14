@@ -8,7 +8,8 @@ use Mouse::Util::TypeConstraints "duck_type";
 use Encode;
 use JSON;
 use MIME::Base64;
-require Chargify::ObjectifiedData;
+use Path::Class "file";
+use Chargify::ObjectifiedData;
 
 around BUILDARGS => sub {
     my $orig  = shift;
@@ -84,19 +85,24 @@ has "agent" =>
 
 sub uri_for {
     my $uri = +shift->endpoint->clone;
-    my $path = shift || confess "Path is required in uri_for";
-    $uri->path($path);
+    my $service_path = file(@_);
+    $service_path or return;
+    $uri->path($service_path);
     $uri;
 }
 
 sub call {
     my $self = shift;
-    my $service = shift || confess "No service given";
-    my $res = $self->get( $self->uri_for($service) );
+    my $path = $self->uri_for(@_) || confess "No service arguments given";
+    my $res = $self->get($path);
     $res->code =~ /\A2\d\d\z/ or die $res->as_string;
     my ( $type, $charset ) = split /;\s*/, $res->header("Content-Type"), 2;
     my $content = decode( $charset, $res->content, Encode::FB_CROAK );
-    map { Chargify::ObjectifiedData->objectify_data($_) } @{ decode_json($content) };
+    my $data = decode_json($content);
+    my $list = ref($data) eq "ARRAY" ?
+        $data : ref($data) eq "HASH" ?
+        [ $data ] : confess("This should not be possible");
+    map { Chargify::ObjectifiedData->objectify_data($_) } @{$list};
 }
 
 sub transactions { +shift->call("transactions", @_) }
