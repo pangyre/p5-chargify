@@ -11,9 +11,9 @@ BEGIN { use_ok("Chargify::API") }
     ok( my $capi = Chargify::API->new,
         "Chargify::API->new with clean ENV");
 
-    isnt( exception { $capi->api_key },
+    isnt( exception { $capi->key },
           undef,
-          "api_key is required or fatal",
+          "key is required or fatal",
         );
 }
 
@@ -21,17 +21,17 @@ BEGIN { use_ok("Chargify::API") }
     local $ENV{CHARGIFY_API_KEY} = "0HA1der2ChargifyApi-";
     ok( my $capi = Chargify::API->new,
         "Chargify::API->new with ENV");
-    is( exception { $capi->api_key },
+    is( exception { $capi->key },
         undef,
-        "api_key is populated from CHARGIFY_API_KEY",
+        "key is populated from CHARGIFY_API_KEY",
       );
 }
 
 # Some security vetting...
 {
-    ok( my $capi = Chargify::API->new(api_key => "0Ha1der2ChargifyApi-",
+    ok( my $capi = Chargify::API->new(key => "0Ha1der2ChargifyApi-",
                                       subdomain => "mysite"),
-        "New with api_key and subdomain" );
+        "New with key and subdomain" );
 
     isnt( exception { $capi->get("http://example.org") },
           undef,

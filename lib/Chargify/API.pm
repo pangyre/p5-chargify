@@ -20,7 +20,7 @@ around BUILDARGS => sub {
     my $orig  = shift;
     my $class = shift;
     return $class->$orig(@_) unless @_ == 1;
-    $class->$orig( api_key => $_[0] );
+    $class->$orig( key => $_[0] );
 };
 
 has "subdomain" =>
@@ -42,7 +42,7 @@ has "endpoint" =>
     },
     ;
 
-has "api_key" =>
+has "key" =>
     is => "ro",
     isa => "Str",
     required => 1,
@@ -78,7 +78,7 @@ has "agent" =>
                        "Accept-Charset" => "utf-8",
                        "Accept" => "application/json",
                        "Authorization" => join(" ", "Basic",
-                                               encode_base64( join(":", $self->api_key, $self->password ))),
+                                               encode_base64( join(":", $self->key, $self->password ))),
 
                    },
                  );
@@ -136,7 +136,7 @@ Chargify::API - ...
  # Use your own API key.
  my $capi = Chargify::API->new("0Ha1der2ChargifyApi-");
 
- my $capi = Chargify::API->new(api_key => "0Ha1der2ChargifyApi-",
+ my $capi = Chargify::API->new(key => "0Ha1der2ChargifyApi-",
                                subdomain => "mysite");
 
 =head1 Description
