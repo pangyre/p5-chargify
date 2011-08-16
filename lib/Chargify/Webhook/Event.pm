@@ -25,6 +25,7 @@ has "api" =>
     is => "ro",
     isa => "Chargify::API",
     required => 1,
+# Yes?    weak_ref => 1,
     ;
 
 has "event" =>
