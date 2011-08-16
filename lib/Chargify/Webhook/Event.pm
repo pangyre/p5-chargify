@@ -1,11 +1,14 @@
 package Chargify::Webhook::Event;
 use Mouse;
-use Digest::MD5 "md5_hex";
 use namespace::autoclean;
-#  * Authenticate posts: MD5::hexdigest(site.shared_key + webhook.body)
-use Mouse::Util::TypeConstraints;
+use Digest::MD5 "md5_hex";
+use URI::Escape "uri_unescape";
+use Mouse::Util::TypeConstraints "duck_type", "enum", "class_type";
+
 class_type "Chargify::API";
+
 enum "CWE" =>
+    "test",
     "Payment Success",
     "Payment Failure",
     "Signup Success",
@@ -26,11 +29,50 @@ has "api" =>
 
 has "event" =>
     is => "ro",
+    writer => "_set_event",
     isa => "CWE",
     required => 1,
     lazy => 1,
-    default => sub { confess "No event was set" },
+    default => sub { +shift->param("event") },
     ;
+
+has "response" =>
+    is => "ro",
+    isa => duck_type(qw/ decoded_content header /),
+    required => 1,
+    ;
+
+has "params" =>
+    traits    => ["Hash"],
+    is        => "ro",
+    isa       => "HashRef[Str]",
+    default   => sub { {} },
+    handles   => {
+        set_param => "set",
+        param => "get",
+    },
+    ;
+
+sub BUILD {
+    my $self = shift;
+    my $args = shift;
+
+    # Return exception instead?
+    my $header = $self->response->header("X-Chargify-Webhook-Signature");
+    my $validation = md5_hex( $self->api->key, $self->response->decoded_content );
+    $header eq $validation
+        or confess "Invalid signature, X-Chargify-Webhook-Signature: $header ne $validation";
+
+    my $ct = $self->response->header("Content-Type");
+    $ct =~ m,application/x-www-form-urlencoded,
+        or confess "Cannot handle any this content type: $ct";
+
+    for my $pair ( split '&|;', $self->response->decoded_content )
+    {
+        my ( $key, $val ) = map { uri_unescape($_) } split '=', $pair, 2;
+        $self->set_param( $key => $val )
+    }
+};
 
 use overload '""' => sub { +shift->event }, fallback => 1;
 
