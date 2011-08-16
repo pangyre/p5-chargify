@@ -24,6 +24,7 @@ enum "CWE" =>
 has "api" =>
     is => "ro",
     isa => "Chargify::API",
+    weak_ref => 1,
     ;
 
 has "key" =>
