@@ -24,7 +24,14 @@ enum "CWE" =>
 has "api" =>
     is => "ro",
     isa => "Chargify::API",
+    ;
+
+has "key" =>
+    is => "ro",
+    isa => "Str",
     required => 1,
+    lazy => 1,
+    default => sub { $_[0]->api ? $_[0]->api->key : $ENV{CHARGIFY_API_KEY} },
     ;
 
 has "event" =>
@@ -53,13 +60,20 @@ has "params" =>
     },
     ;
 
+around BUILDARGS => sub {
+    my $orig  = shift;
+    my $class = shift;
+    return $class->$orig(@_) unless @_ == 1;
+    $class->$orig( response => $_[0] );
+};
+
 sub BUILD {
     my $self = shift;
     my $args = shift;
 
     # Return exception instead?
     my $header = $self->response->header("X-Chargify-Webhook-Signature");
-    my $validation = md5_hex( $self->api->key, $self->response->decoded_content );
+    my $validation = md5_hex( $self->key, $self->response->decoded_content );
     $header eq $validation
         or confess "Invalid signature, X-Chargify-Webhook-Signature: $header ne $validation";
 

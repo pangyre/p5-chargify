@@ -9,13 +9,9 @@ __END__
 
 Things this needs to do:
 
-  * Authenticate posts: MD5::hexdigest(site.shared_key + webhook.body)
-    * X-Chargify-Webhook-Signature
-
-  * Do something with the information such that its available to outside code.
+  * Receive events.
+  * Create event objects.
+    * Pass on pertinent info to event?
+  * Serialize events?
+    * Do something with the information such that its available to outside code.
     * OR have different models of operation.
-
-
-    Webhooks enabled?
-      Send Webhooks to my Webhook URL
-    Webhook URL
