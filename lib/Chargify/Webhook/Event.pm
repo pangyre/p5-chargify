@@ -8,18 +8,18 @@ use Mouse::Util::TypeConstraints "duck_type", "enum", "class_type";
 class_type "Chargify::API";
 
 enum "CWE" =>
-    "test",
-    "Payment Success",
-    "Payment Failure",
-    "Signup Success",
-    "Signup Failure",
-    "Billing Date Change",
-    "Renewal Success",
-    "Renewal Failure",
-    "Subscription State Change",
-    "Subscription Product Change",
-    "Expiring Card",
-    ;
+    qw/
+    test
+    signup_success 
+    signup_failure 
+    renewal_success 
+    renewal_failure 
+    payment_success 
+    payment_failure 
+    billing_date_change 
+    subscription_state_change 
+    expiring_card 
+    /;
 
 has "api" =>
     is => "ro",
@@ -115,3 +115,4 @@ headers:
       Subscription State Change
       Subscription Product Change
       Expiring Card
+
