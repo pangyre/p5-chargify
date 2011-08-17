@@ -20,6 +20,8 @@ sub _load_class_with_attributes {
           weak_ref => 1,
           ;
 
+      # Parent? Instead
+
       has [qw/ $attr_str /] =>
           is => "ro",
           ;

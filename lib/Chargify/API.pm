@@ -62,7 +62,7 @@ has "password" =>
 has "agent" =>
     is => "rw",
     isa => duck_type(qw/ get post put /), # delete...is needed
-    handles => [qw/ post put /],
+    handles => [qw/ put /],
     lazy => 1,
     required => 1,
     default => sub {
@@ -121,6 +121,16 @@ sub get {
     }
 }
 
+sub post {
+    my $self = shift;
+    my $path = shift || die "What?";
+    my $res = $self->agent->post($path);
+    return $res->code == 201; # Universal? Doubtful.
+#    When I send a POST request with the json data to
+#    https://[@subdomain].chargify.com/product_families/[@product_family.id]/metered_components.json
+#    Then the response status should be "201 Created"
+}
+
 sub transactions { +shift->get("transactions", @_) }
 sub subscriptions { +shift->get("subscriptions", @_) }
 sub products { +shift->get("products", @_) }
@@ -170,9 +180,56 @@ Plenty, includingE<ndash>
 
 =item * /product_families/<x>/[component_type]
 
+This is logical path: C<product-E<gt>component-E<gt>create>.
+
+Component types, not all proper names/keys: metered_component, quantity based, on/off.
+
+create_component
+    post("product_families", $product_family->id, "product",
+    
+);
+
+
+ Feature: Create Metered Component
+     Scenario: Successfully create a metered component with per_unit pricing
+      Given I have 1 product
+      And I have this json metered_component data
+        """
+        {"metered_component":{
+          "name":"Text messages",
+          "unit_name": "text message",
+          "pricing_scheme": "stairstep",
+          "prices":[
+            {"starting_quantity":1, "unit_price":1.0, "component":null}
+          ]
+        }}
+        """
+      When I send a POST request with the json data to https://[@subdomain].chargify.com/product_families/[@product_family.id]/metered_components.json
+      Then the response status should be "201 Created"
+
 =item * /subscription/<x>/charges
 
 =item * /coupons
+
+ $self->post( $self->uri_for("coupons"), $new_coupon_object );
+ POST:
+    {
+       "coupon" :{
+           "name": "15% off",
+           "code": "15OFF",
+           "description": "15% off for life",
+           "percentage": "15",
+           "allow_negative_balance": false,
+           "recurring": false,
+           "end_date": "2012-08-29T12:00:00-04:00",
+           "product_family_id": 2
+      }
+    }
+
+Find coupon.
+ GET:
+   $self->get("coupon/find", [ code => "MYCOUPONCODE" ]);
+
 
 =item * /customers
 
@@ -260,3 +317,5 @@ such damages.
 =cut
 
 # https://<subdomain>.chargify.com/<resource URI>
+
+    ??? uri_for(@path, [ @path_args????? ], { query_params });
