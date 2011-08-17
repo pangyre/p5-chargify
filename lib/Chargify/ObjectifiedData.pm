@@ -12,10 +12,20 @@ sub _load_class_with_attributes {
     {
       package $class;
       use Mouse;
+
+      has "api" =>
+          is => "ro",
+          writer => "set_api",
+          isa => "Chargify::API",
+          weak_ref => 1,
+          ;
+
       has [qw/ $attr_str /] =>
-            is => "ro",
-            ;
+          is => "ro",
+          ;
+
       sub loaded { 1 }
+
       __PACKAGE__->meta->make_immutable();
     }
 PackageInstantiation

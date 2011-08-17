@@ -24,7 +24,7 @@ around BUILDARGS => sub {
 };
 
 has "subdomain" =>
-    is => "ro",
+    is => "rw",
     isa => "Str",
     required => 1,
     lazy => 1,
@@ -104,11 +104,16 @@ sub get {
 
     if ( ref $data eq "ARRAY" )
     {
-        return map { Chargify::ObjectifiedData->objectify_data($_) } @{$data};
+        my @obj = map { Chargify::ObjectifiedData->objectify_data($_) } @{$data};
+        $_->set_api($self) for @obj;
+        return @obj;
     }
     elsif ( ref $data eq "HASH" )
     {
-        return Chargify::ObjectifiedData->objectify_data($data);
+        my ( $obj ) = Chargify::ObjectifiedData->objectify_data($data);
+        blessed $obj or confess "Could not create object from: $content";
+        $obj->set_api($self);
+        return $obj;
     }
     else
     {
@@ -138,6 +143,10 @@ Chargify::API - ...
 
  my $capi = Chargify::API->new(key => "0Ha1der2ChargifyApi-",
                                subdomain => "mysite");
+
+ # Rely on ENV for CHARGIFY_API_KEY, set subdomain after creation.
+ my $capi = Chargify::API->new();
+ $capi->subdomain("mysubdomain");
 
 =head1 Description
 
