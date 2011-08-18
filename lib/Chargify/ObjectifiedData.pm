@@ -32,7 +32,7 @@ sub _load_class_with_attributes {
           is => "ro",
           ;
 
-      sub loaded { 1 }
+      sub loaded { 1 } # Wrong way.
 
       __PACKAGE__->meta->make_immutable();
     }
