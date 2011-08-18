@@ -7,6 +7,10 @@ use Scalar::Util "blessed";
 sub _load_class_with_attributes {
     my ( $class, @attributes ) = @_;
     $class or confess "No class given";
+
+    # If we have it defined, use that, don't generate the package.
+    eval { require $class; 1 } and return 1;
+
     my $attr_str = join(" ", @attributes);
     eval <<"PackageInstantiation";
     {
