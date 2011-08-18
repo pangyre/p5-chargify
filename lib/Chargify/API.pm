@@ -105,7 +105,7 @@ sub get {
     if ( ref $data eq "ARRAY" )
     {
         my @obj = map { Chargify::ObjectifiedData->objectify_data($_) } @{$data};
-        $_->set_api($self) for @obj;
+        # Not necessary? $_->set_api($self) for @obj;
         return @obj;
     }
     elsif ( ref $data eq "HASH" )
@@ -131,10 +131,14 @@ sub post {
 #    Then the response status should be "201 Created"
 }
 
-sub transactions { +shift->get("transactions", @_) }
 sub subscriptions { +shift->get("subscriptions", @_) }
-sub products { +shift->get("products", @_) }
+sub transactions { +shift->get("transactions", @_) }
 sub customers { +shift->get("customers", @_) }
+sub products { +shift->get("products", @_) }
+
+sub create_coupon {
+
+}
 
 __PACKAGE__->meta->make_immutable();
 

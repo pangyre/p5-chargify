@@ -30,6 +30,9 @@ subtest "Attribute methods match data" => sub {
     }
 };
 
+ok( my $json = $coupon->as_json, "as_json" );
+is_deeply( decode_json($json), $data );
+
 done_testing();
 
 __DATA__

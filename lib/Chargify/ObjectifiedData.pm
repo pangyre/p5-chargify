@@ -9,7 +9,8 @@ sub _load_class_with_attributes {
     $class or confess "No class given";
 
     # If we have it defined, use that, don't generate the package.
-    eval { require $class; 1 } and return 1;
+    eval "use $class; 1" and return 1;
+    warn $@ if $@;
 
     # MAYBE this should use ->meta to inspect and add missing attributes?
 
@@ -19,6 +20,7 @@ sub _load_class_with_attributes {
       package $class;
       use Mouse;
 
+      # No?
       has "api" =>
           is => "ro",
           writer => "set_api",
