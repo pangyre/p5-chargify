@@ -5,7 +5,7 @@ use JSON;
 sub as_json {
     my $self = shift;
     my $class = blessed($self);
-    ( my $key = lc $class ) =~ s/chargify:://;
+    ( my $key = lc $class ) =~ s/\AChargify:://i;
 
     my %data;
     for my $attr ( $self->meta->get_all_attributes ) {
