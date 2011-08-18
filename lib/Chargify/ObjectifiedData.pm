@@ -7,15 +7,18 @@ use Scalar::Util "blessed";
 sub _load_class_with_attributes {
     my ( $class, @attributes ) = @_;
     $class or confess "No class given";
+    ( my $mod = $class . ".pm" ) =~ s,::,/,;
 
     # If we have it defined, use that, don't generate the package.
-    eval "use $class; 1" and return 1;
-    warn $@ if $@;
+    eval { require $mod };
+#    warn $@ if $@;
+    return 1 unless $@;
 
     # MAYBE this should use ->meta to inspect and add missing attributes?
+    # warn "Loading package $class";
 
     my $attr_str = join(" ", @attributes);
-    eval <<"PackageInstantiation";
+    my $code = <<"PackageInstantiation";
     {
       package $class;
       use Mouse;
@@ -39,6 +42,8 @@ sub _load_class_with_attributes {
       __PACKAGE__->meta->make_immutable();
     }
 PackageInstantiation
+
+    eval $code;
     $@ and confess $@;
 }
 
@@ -62,6 +67,7 @@ sub _curry_data_to_object_tree {
     my ( $class, $args ) = @_;
 
     my @attributes = keys %{ $args };
+
     if ( $class and not eval { $class->loaded } )
     {
         _load_class_with_attributes( $class, @attributes );

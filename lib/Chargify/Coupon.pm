@@ -1,7 +1,7 @@
 package Chargify::Coupon;
 use Mouse;
 use namespace::autoclean;
-use JSON;
+with "Chargify::RoleUtil";
 
 # This is not yet comprehensive!
 has [qw/ name code description /] =>
@@ -32,17 +32,6 @@ has "end_date" =>
 #    lazy => 1,
 #    default => sub {},
 #    ;
-
-# How to tag what gets serialized if there are extras like the product family?
-sub as_json {
-    my $self = shift;
-    my %data;
-    for my $attr ( $self->meta->get_all_attributes ) {
-        my $method = $attr->name;
-        $data{$method} = $self->$method;
-    }
-    encode_json({ coupon => \%data });
-}
 
 __PACKAGE__->meta->make_immutable();
 

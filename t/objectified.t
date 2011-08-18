@@ -11,7 +11,7 @@ ok( $data->[0]->{subscription}, "Matches expectations" );
 # my @objects;
 for my $thing ( @{$data} )
 {
-    # note( $thing );
+    #note( $thing );
     ok( my ( $object ) = Chargify::ObjectifiedData->objectify_data( $thing ),
         "Chargify::ObjectifiedData->objectify_data..." );
     # push @objects, $object;
