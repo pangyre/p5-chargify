@@ -25,6 +25,17 @@ for my $thing ( @{$data} )
     # is( $object->credit_card->masked_card_number, $/;
 }
 
+{
+    my %customer = ( first_name => "Joe",
+                     last_name => "Blow",
+                     email => "joe\@example.com", );
+    
+    ok( my ( $customer ) = Chargify::ObjectifiedData->objectify_data({ customer => \%customer }),
+        "Chargify::ObjectifiedData->objectify_data( customer data )" );
+    is( $customer->email, 'joe@example.com',
+        "Customer attributes looks right" );
+}
+
 done_testing();
 
 __DATA__
