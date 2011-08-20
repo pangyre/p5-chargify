@@ -22,7 +22,8 @@ sub _load_class_with_attributes {
     {
       package $class;
       use Mouse;
-
+      use namespace::autoclean;
+      with "Chargify::RoleUtil";
       # No?
       has "api" =>
           is => "ro",
@@ -43,7 +44,7 @@ sub _load_class_with_attributes {
     }
 PackageInstantiation
 
-    eval $code;
+    eval $code; # Make a generator to return/inspect it?
     $@ and confess $@;
 }
 

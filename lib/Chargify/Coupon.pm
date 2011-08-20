@@ -21,7 +21,7 @@ has [qw/ percentage product_family_id /] =>
 
 has "end_date" =>
     is => "rw",
-    # Needs coercion... isa => "DateTime",
+    # Needs coercion... isa => "DateTime", and stringification overloading for JSON role.
     isa => "Str",
     required => 1,
     ;
