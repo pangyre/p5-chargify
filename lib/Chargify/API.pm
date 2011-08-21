@@ -2,6 +2,7 @@
 package Chargify::API;
 our $AUTHORITY = 'cpan:ASHLEY';
 our $VERSION = "0.01-TRIAL";
+use feature "switch";
 use Mouse;
 use namespace::autoclean;
 use Mouse::Util::TypeConstraints "duck_type";
@@ -10,6 +11,7 @@ use JSON;
 use MIME::Base64;
 use Path::Class "file";
 use Chargify::ObjectifiedData;
+
 
 has "chargify_version" =>
     is => "ro",
@@ -124,8 +126,10 @@ sub get {
 sub post {
     my $self = shift;
     my $path = shift || die "What?";
-    my $res = $self->agent->post($path);
-    return $res->code == 201; # Universal? Doubtful.
+    print "PATH: $path\n";
+    my $res = $self->agent->post("$path", @_);
+    return $res;
+#    return $res->code == 201; # Universal? Doubtful.
 #    When I send a POST request with the json data to
 #    https://[@subdomain].chargify.com/product_families/[@product_family.id]/metered_components.json
 #    Then the response status should be "201 Created"
@@ -136,8 +140,28 @@ sub transactions { +shift->get("transactions", @_) }
 sub customers { +shift->get("customers", @_) }
 sub products { +shift->get("products", @_) }
 
-sub create_coupon {
+sub create {
+    my ( $self, $obj ) = @_;
+    use HTTP::Request::Common;
 
+    given ( blessed $obj )
+    {
+        when ( /Chargify::Customer/ )
+        {
+            my $req = POST $self->uri_for("/customers"),
+                "Content-Type" => "application/json; charset=utf-8",
+                Content => $obj->as_json;
+
+            print $req->as_string;
+
+            my $res = $self->agent->request($req);
+
+            $res->code == 201
+                or confess "Couldn't create", $res->decoded_content;
+        }
+        default { confess "Cannot create $obj, don't know how" }
+    }
+    1;
 }
 
 __PACKAGE__->meta->make_immutable();

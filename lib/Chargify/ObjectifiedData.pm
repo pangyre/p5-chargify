@@ -25,12 +25,12 @@ sub _load_class_with_attributes {
       use namespace::autoclean;
       with "Chargify::RoleUtil";
       # No?
-      has "api" =>
-          is => "ro",
-          writer => "set_api",
-          isa => "Chargify::API",
-          weak_ref => 1,
-          ;
+#      has "api" =>
+#          is => "ro",
+#          writer => "set_api",
+#          isa => "Chargify::API",
+#          weak_ref => 1,
+#          ;
 
       # Parent? Instead
 
